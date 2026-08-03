@@ -38,6 +38,8 @@ function SceneControls({ webglStatus }: { webglStatus: "available" | "unavailabl
   const setPresentation = useAppStore((state) => state.setPresentation);
   const setExplode = useAppStore((state) => state.setExplode);
   const setQuality = useAppStore((state) => state.setQuality);
+  const telemetryStatus = useAppStore((state) => state.telemetryStatus);
+  const telemetryLastEventAt = useAppStore((state) => state.telemetryLastEventAt);
   const [fps, setFps] = useState<number | null>(null);
   useEffect(() => {
     let frame = 0; let count = 0; let started = performance.now();
@@ -47,10 +49,11 @@ function SceneControls({ webglStatus }: { webglStatus: "available" | "unavailabl
   return (
     <>
       <div className="scene-status">
-        <span><i /> SIMULATION</span>
+        <span><i /> {telemetryStatus}</span>
         <span>{vehicleComponents.length} COMPONENTS</span>
         <span>{webglStatus === "available" ? "WEBGL READY" : "CONCEPT IMAGES"}</span>
         <span>{fps === null ? "FPS MEASURING" : `${fps} FPS`}</span>
+        {telemetryLastEventAt && <span>EVENT {new Date(telemetryLastEventAt).toLocaleTimeString()}</span>}
       </div>
       <div className="view-label">
         {mode === "architecture" ? <Layers3 size={15} /> : mode === "diagnostic" ? <MonitorCog size={15} /> : <Move3d size={15} />}

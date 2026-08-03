@@ -3,6 +3,7 @@ import { persist } from "zustand/middleware";
 import { componentById } from "../data/vehicle";
 import { scenarioById } from "../data/scenarios";
 import { ScenarioEngine } from "../engine/scenarioEngine";
+import type { ConnectionStatus } from "../domain/telemetry";
 import type {
   ComponentId,
   InspectorTab,
@@ -52,6 +53,8 @@ interface AppState {
   completedChecks: string[];
   quality: "Low" | "Medium" | "High";
   reducedMotion: boolean;
+  telemetryStatus: ConnectionStatus;
+  telemetryLastEventAt: number | null;
   learningOverrides: Record<string, LearningStatus>;
   notes: Record<string, string>;
   tags: string[];
@@ -117,6 +120,8 @@ export const useAppStore = create<AppState>()(persist<AppState, [], [], Pick<App
   completedChecks: [],
   quality: "High",
   reducedMotion: false,
+  telemetryStatus: "SIMULATION",
+  telemetryLastEventAt: null,
   learningOverrides: {},
   notes: {},
   tags: [],
@@ -292,6 +297,7 @@ const scenarioEngine = new ScenarioEngine(
       signalSpeed: patch.speed ?? current.signalSpeed,
       selectedId: patch.step === undefined ? current.selectedId : scenario.steps[step]?.componentIds[0] ?? null,
       inspectorOpen: patch.step === undefined ? current.inspectorOpen : true,
+      telemetryLastEventAt: patch.step === undefined ? current.telemetryLastEventAt : Date.now(),
     });
   },
 );

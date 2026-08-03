@@ -47,13 +47,16 @@ function DiagnosticTimeline() {
       const done = completed.includes(check.id);
       return <button key={check.id} className={done ? `complete ${check.state}` : ""} onClick={() => runDiagnosticCheck(check.id, check.componentId)}><span className="check-index">{done ? check.state === "fail" ? <XCircle size={16} /> : <CheckCircle2 size={16} /> : <Circle size={14} />}</span><div><small>CHECK {index + 1}</small><strong>{check.label}</strong>{done && <><code><Terminal size={11} /> {check.command}</code><p>{check.result}</p></>}</div></button>;
     })}</div>
+    <span className="sr-only" aria-live="polite">
+      {complete ? `Diagnostic complete. ${inference?.rootCause ?? "Root cause identified."}` : `${completed.length} of ${clusterDiagnostic.checks.length} diagnostic checks complete.`}
+    </span>
     {inference && <div className="root-cause" aria-live="polite"><small>ROOT CAUSE CONFIRMED FROM RECORDED OBSERVATION</small><strong>{inference.rootCause}</strong><p>{inference.resolution}</p></div>}
   </>;
 }
 
 function ScenarioLibrary() {
   const selectScenario = useAppStore((state) => state.selectScenario);
-  return <><div className="timeline-info"><span className="idle-indicator" /><div><small>SCENARIO LIBRARY</small><strong>Explore a curated runtime journey</strong></div></div><div className="scenario-pills">{scenarioCatalog.map((scenario) => <button key={scenario.id} onClick={() => selectScenario(scenario.id)}>{scenario.title} <small>{scenario.sourceMode}</small> <Play size={12} /></button>)}</div></>;
+  return <><div className="timeline-info"><span className="idle-indicator" /><div><small>SCENARIO LIBRARY</small><strong>Explore a curated runtime journey</strong></div></div><div className="scenario-pills">{scenarioCatalog.map((scenario) => { const seconds = Math.ceil(scenario.steps.reduce((total, step) => total + step.durationMs, 0) / 1000); return <button key={scenario.id} onClick={() => selectScenario(scenario.id)}><span><strong>{scenario.title}</strong><small>{scenario.category} · {scenario.sourceMode} · ~{seconds}s</small></span><Play size={12} /></button>; })}</div></>;
 }
 
 export function ScenarioTimeline() {
@@ -63,3 +66,5 @@ export function ScenarioTimeline() {
   const toggle = useAppStore((state) => state.toggleTimeline);
   return <section className={`timeline ${open ? "open" : "collapsed"} ${mode}`}><button className="timeline-toggle" onClick={toggle} aria-label="Toggle scenario timeline"><ChevronDown size={15} /></button><div className="timeline-content">{mode === "signal" ? <JourneyTimeline scenario={scenarioById[activeScenarioId]} /> : mode === "diagnostic" ? <DiagnosticTimeline /> : <ScenarioLibrary />}</div></section>;
 }
+
+

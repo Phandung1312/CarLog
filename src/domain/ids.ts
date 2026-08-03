@@ -12,4 +12,12 @@ export const scenarioIds = [
 ] as const;
 
 export type ScenarioId = (typeof scenarioIds)[number];
-export type KnowledgeNodeId = `node:${string}`;
+
+export const knowledgeNodeIds = [
+  "node:wheel-sensor", "node:gateway", "node:can", "node:ivh", "node:car-property-service",
+  "node:car-property-manager", "node:systemui", "node:display-manager", "node:media-controller",
+  "node:media-session", "node:car-audio-service", "node:audio-hal", "node:car-user-manager",
+  "node:user-hal", "node:car-power", "node:power-policy",
+] as const;
+
+export type KnowledgeNodeId = (typeof knowledgeNodeIds)[number];

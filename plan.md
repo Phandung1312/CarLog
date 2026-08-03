@@ -154,7 +154,7 @@ Tasks:
 
 Acceptance:
 
-- [ ] Giả lập WebGL unavailable vẫn dùng được search, inspector, timeline và Concept Images.
+- [x] Giả lập WebGL unavailable vẫn dùng được search, inspector, timeline và Concept Images.
 - [ ] Model load failure không làm crash toàn bộ React tree.
 
 ### BUG-03. Scenario playback có một nguồn thời gian
@@ -183,10 +183,10 @@ Acceptance:
 
 ### BUG-04. Reduced motion đầy đủ
 
-- [ ] Dừng WebGL signal pulse và network packet khi reduced motion bật.
-- [ ] Camera focus không dùng transition dài.
-- [ ] Timeline vẫn đổi step nhưng dùng highlight tĩnh.
-- [ ] Thêm `aria-live` cho thay đổi step và diagnostic result.
+- [x] Dừng WebGL signal pulse và network packet khi reduced motion bật.
+- [x] Camera focus không dùng transition dài.
+- [x] Timeline vẫn đổi step nhưng dùng highlight tĩnh.
+- [x] Thêm `aria-live` cho thay đổi step và diagnostic result.
 
 ### Phase 1 acceptance
 
@@ -409,16 +409,16 @@ Nguồn khởi điểm:
 
 - [ ] Thay toàn bộ placeholder pill bằng catalog render từ data.
 - [ ] Mỗi scenario có title, category, source mode và estimated duration.
-- [ ] Chọn scenario phải set mode, reset engine phù hợp và mở timeline.
+- [x] Chọn scenario phải set mode, reset engine phù hợp và mở timeline.
 - [ ] Hỗ trợ next/previous/play/pause/restart/seek/speed cho mọi scenario hợp lệ.
 - [ ] Diagnostic có renderer riêng nhưng dùng cùng catalog/engine lifecycle.
 
 ### Phase 3 acceptance
 
 - [ ] Cả 6 scenario mở và chạy được từ library.
-- [ ] Không còn pill placeholder trong `ScenarioTimeline.tsx`.
+- [x] Không còn pill placeholder trong `ScenarioTimeline.tsx`.
 - [ ] Mọi scenario có source/provenance.
-- [ ] Timeline, scene và Inspector đồng bộ cùng active step.
+- [x] Timeline, scene và Inspector đồng bộ cùng active step.
 - [ ] E2E cover một happy path cho từng scenario.
 
 ## 8. Phase 4 — Hoàn thiện UI placeholder và persistence
@@ -505,7 +505,7 @@ interface TelemetryAdapter {
 - [ ] Import JSON/NDJSON fixture.
 - [ ] Validate schema trước khi replay.
 - [ ] Hỗ trợ play, pause, speed và seek.
-- [ ] Đồng bộ timestamp với scenario timeline.
+- [x] Đồng bộ timestamp với scenario timeline.
 - [ ] Hiển thị metadata nguồn log và thời điểm ghi.
 
 ### TEL-03. Live adapter/bridge
@@ -539,7 +539,7 @@ Trạng thái UI bắt buộc:
 
 ### REF-02. Tách CSS theo feature
 
-- [ ] Chia `styles.css` thành app shell, viewer, inspector, timeline và responsive modules.
+- [x] Chia `styles.css` thành app shell, viewer, inspector, timeline và responsive modules.
 - [ ] Giữ design tokens tập trung.
 - [ ] Thêm visual regression tại 1440px, 900px và 390px.
 
@@ -554,8 +554,8 @@ Trạng thái UI bắt buộc:
 
 ### A11Y-01. Accessibility
 
-- [ ] Keyboard-only navigation cho mode, search, timeline và Inspector tabs.
-- [ ] `aria-live` cho scenario step, diagnostic result và connection status.
+- [x] Keyboard-only navigation cho mode, search, timeline và Inspector tabs.
+- [x] `aria-live` cho scenario step, diagnostic result và connection status.
 - [ ] Focus management khi mở/đóng panel.
 - [ ] Reduced motion cho CSS và WebGL.
 - [ ] Kiểm tra contrast và touch target trên mobile.

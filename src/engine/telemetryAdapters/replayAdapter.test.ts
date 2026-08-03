@@ -10,5 +10,14 @@ describe("ReplayAdapter", () => {
     adapter.next(); adapter.next();
     expect(adapter.getStatus()).toBe("RECORDED REPLAY");
     expect(seen).toEqual(["early", "late"]);
+    expect(adapter.getMetadata()).toMatchObject({ sourceId: "imported-replay", startedAtMs: 1, endedAtMs: 2 });
+  });
+
+  it("pauses on seek and validates supported playback speeds", async () => {
+    const adapter = new ReplayAdapter();
+    await adapter.loadJson('[{"type":"property-change","summary":"one","monotonicTimestampMs":10}]');
+    await adapter.connect(); adapter.play(); expect(adapter.isPlaying()).toBe(true);
+    adapter.seek(10); expect(adapter.isPlaying()).toBe(false);
+    expect(() => adapter.setSpeed(3)).toThrow("Replay speed");
   });
 });

@@ -43,9 +43,9 @@ export function ToolRail() {
   return (
     <aside className="toolrail" aria-label="Vehicle tools">
       <div className="tool-group">
-        <button className="tool active" data-tip="Select component" aria-label="Select component">
+        <span className="tool active" data-tip="Select component" aria-label="Selection tool active" role="status">
           <MousePointer2 size={18} />
-        </button>
+        </span>
         <button
           className="tool"
           data-tip="Orbit with left drag"

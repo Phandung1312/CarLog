@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run validate:data && tsc -b && vite build",
+    "build": "npm run validate:data && tsc -b && vite build && npm run verify:bundle",
     "preview": "vite preview",
     "typecheck": "tsc -b --pretty false",
     "lint": "eslint src --max-warnings 0",
@@ -13,6 +13,7 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "validate:data": "vitest run src/data/data.test.ts",
+    "verify:bundle": "node scripts/verifyBundle.mjs",
     "verify": "npm run typecheck && npm run lint && npm run test && npm run build"
   },
   "dependencies": {

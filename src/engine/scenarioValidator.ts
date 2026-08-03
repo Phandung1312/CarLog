@@ -1,10 +1,11 @@
-import { componentIds, scenarioIds } from "../domain/ids";
+import { componentIds, knowledgeNodeIds, scenarioIds } from "../domain/ids";
 import type { KnowledgeEdge, KnowledgeNode } from "../domain/knowledge";
 import type { ScenarioDefinition } from "../domain/scenarios";
 
 export function validateScenarioData(scenarios: ScenarioDefinition[], nodes: KnowledgeNode[], edges: KnowledgeEdge[]) {
   const errors: string[] = [];
   const nodeIds = new Set(nodes.map((node) => node.id));
+  knowledgeNodeIds.forEach((id) => { if (!nodeIds.has(id)) errors.push(`Missing knowledge node: ${id}`); });
   const seenScenarioIds = new Set<string>();
   for (const scenario of scenarios) {
     if (seenScenarioIds.has(scenario.id)) errors.push(`Duplicate scenario ID: ${scenario.id}`);

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { componentIds } from "../domain/ids";
+import { componentIds, knowledgeNodeIds } from "../domain/ids";
 import { assertValidScenarioData, validateScenarioData } from "../engine/scenarioValidator";
 import { knowledgeEdges, knowledgeNodes } from "./knowledge";
 import { scenarioCatalog } from "./scenarios";
@@ -17,9 +17,13 @@ describe("curated knowledge data", () => {
     expect(() => assertValidScenarioData(scenarioCatalog, knowledgeNodes, knowledgeEdges)).not.toThrow();
   });
 
+  it("defines each typed knowledge node exactly once", () => {
+    expect(knowledgeNodes.map((node) => node.id).sort()).toEqual([...knowledgeNodeIds].sort());
+  });
+
   it("reports dangling references", () => {
     const broken = structuredClone(scenarioCatalog);
-    broken[0].steps[0].knowledgeNodeIds = ["node:missing"];
+    broken[0].steps[0].knowledgeNodeIds = ["node:missing" as unknown as (typeof knowledgeNodeIds)[number]];
     expect(validateScenarioData(broken, knowledgeNodes, knowledgeEdges)).toContain("vehicle-speed-changed/sense: unknown knowledge node node:missing");
   });
 });

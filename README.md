@@ -312,8 +312,6 @@ meshes.
 - Section-cut/clipping planes and screenshot export are not included in this
   vertical slice.
 - X-Ray transparency is preset rather than exposed as a second opacity slider.
-- Learning status, notes, tags, and scenario completion persist per local Driver or Passenger profile; the store includes a versioned migration path.
-- The curated catalog includes six scenarios: vehicle speed, cluster diagnostic, Android boot, start media, switch user, and vehicle suspend.
 - Search uses an in-memory index; source paths are reference data, not a code
   browser.
 - Mobile supports navigation and viewing, but dense diagnostic analysis remains
@@ -324,10 +322,10 @@ meshes.
 1. Add the GLB adapter above and use Draco/Meshopt-compressed production assets.
 2. Add an authenticated learning-profile service when cross-device sync is required.
 3. Implement movable X/Y/Z clipping planes and a visible section indicator.
-4. Split scenario content into lazy-loaded JSON/MDX packages.
+4. Split large scenario content into lazy-loaded JSON/MDX packages as the catalog grows.
 5. Add more signal-flow scenarios using the topology-aware CAN/Ethernet routes.
-6. Add automated browser interaction, accessibility, and visual regression tests.
-7. Add screenshot/export and shareable URLs for mode, selection, and scenario step.
+6. Expand browser accessibility and visual-regression coverage beyond the current smoke suite.
+7. Add screenshot export; shareable URLs already cover mode, presentation, selection, scenario, and step.
 8. Profile representative integrated-GPU hardware and define adaptive quality
    thresholds.
 

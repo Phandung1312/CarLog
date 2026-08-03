@@ -1097,6 +1097,7 @@ function SignalFlowLayer() {
   const step = useAppStore((state) => state.signalStep);
   const playing = useAppStore((state) => state.signalPlaying);
   const speed = useAppStore((state) => state.signalSpeed);
+  const reducedMotion = useAppStore((state) => state.reducedMotion);
   const pulse = useRef<THREE.Mesh>(null);
   const phase = useRef(0);
 
@@ -1117,7 +1118,7 @@ function SignalFlowLayer() {
   }, [positions, step]);
 
   useFrame((_, delta) => {
-    if (mode !== "signal" || !playing) return;
+    if (reducedMotion || mode !== "signal" || !playing) return;
     phase.current = (phase.current + delta * 0.65 * speed) % 1;
     if (pulse.current) {
       const from = positions[Math.max(0, Math.min(step, positions.length - 2))];
@@ -1361,3 +1362,5 @@ export function VehicleScene({ showModel }: { showModel: boolean }) {
 }
 
 useGLTF.preload("/models/CarConcept.glb");
+
+

@@ -11,7 +11,7 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { speedSignalFlow } from "../../data/scenarios";
+import { scenarioById } from "../../data/scenarios";
 import { componentById, vehicleComponents } from "../../data/vehicle";
 import { useAppStore } from "../../store/useAppStore";
 import type { ComponentId, InspectorTab, LearningStatus } from "../../types";
@@ -146,25 +146,29 @@ function ArchitectureTab({ componentId }: { componentId: ComponentId }) {
 }
 
 function RuntimeTab({ componentId }: { componentId: ComponentId }) {
-  const relevant = speedSignalFlow.steps.filter(
+  const activeScenarioId = useAppStore((state) => state.activeScenarioId);
+  const activeStep = useAppStore((state) => state.signalStep);
+  const scenario = scenarioById[activeScenarioId];
+  const relevant = scenario.steps.filter(
     (step) =>
-      step.componentId === componentId ||
-      componentById[componentId].relatedComponents.includes(step.componentId),
+      step.componentIds.includes(componentId) ||
+      step.componentIds.some((id) => componentById[componentId].relatedComponents.includes(id)),
   );
   return (
     <div className="tab-content">
       <section>
-        <p className="section-label">VEHICLE SPEED CHANGED</p>
+        <p className="section-label">{scenario.title.toUpperCase()}</p>
         <div className="runtime-steps">
-          {(relevant.length ? relevant : speedSignalFlow.steps).map((step) => (
+          {(relevant.length ? relevant : scenario.steps).map((step) => (
             <button
               key={step.id}
               onClick={() => {
-                const index = speedSignalFlow.steps.indexOf(step);
-                useAppStore.getState().setMode("signal");
+                const index = scenario.steps.indexOf(step);
+                useAppStore.getState().setMode(scenario.category === "Diagnostic" ? "diagnostic" : "signal");
                 useAppStore.getState().setSignalStep(index);
-                useAppStore.getState().select(step.componentId, true);
+                useAppStore.getState().select(step.componentIds[0], true);
               }}
+              aria-current={scenario.steps.indexOf(step) === activeStep ? "step" : undefined}
             >
               <span>{step.layer}</span>
               <strong>{step.label}</strong>
