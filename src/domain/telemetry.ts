@@ -1,7 +1,7 @@
 import type { ScenarioEvent } from "./scenarios";
 
 export type TelemetryMode = "bundled" | "replay" | "live";
-export type ConnectionStatus = "SIMULATION" | "RECORDED REPLAY" | "LIVE - CONNECTED" | "LIVE - STALE" | "DISCONNECTED";
+export type ConnectionStatus = "SIMULATION" | "RECORDED REPLAY" | "LIVE - CONNECTED" | "LIVE - STALE" | "DISCONNECTED" | "FILE IMPORT" | "PARSE WARNING";
 
 export interface TelemetryEvent extends ScenarioEvent {
   sourceId: string;

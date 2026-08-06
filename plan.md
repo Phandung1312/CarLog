@@ -631,3 +631,121 @@ MVP curated ước lượng **23-29 ngày công cho một developer**. Replay ad
 - Cuối mỗi phase, ghi ngắn gọn kết quả test và commit/hash nếu repository có Git.
 - Nếu thay đổi scope hoặc schema, cập nhật plan trước khi viết code phụ thuộc.
 - Nếu gặp blocker cần quyết định sản phẩm hoặc quyền truy cập thiết bị, dừng tại task đó và ghi rõ blocker; không tự giả lập là live data.
+
+## 15. CarLogVisualization � Android car-log visualization feature
+
+### 15.1 Goal and boundaries
+
+CarLogVisualization is a second product surface beside Android Learning. It reads Android Automotive logs from an uploaded file, replay fixture, or explicitly configured local ADB bridge, then explains each relevant log line using the existing vehicle UI, component selection, architecture layers, signal paths, animations, inspector, and timeline.
+
+For each accepted record, the product should show what happened, when it happened, which physical/software components were involved, what state changed, related events, and whether the result is observed, correlated, inferred, or unknown.
+
+MVP is read-only and explanatory. Browser code must never execute arbitrary shell, ADB, or device commands. Direct ADB access belongs in a separately permissioned local companion bridge; file import and replay must work without ADB, WebGL, or network access.
+
+### 15.2 Target architecture
+
+```text
+File / NDJSON / logcat export ----\
+                                   +--> Ingestion adapter
+Local ADB companion bridge -------/          |
+                                              v
+                                    Parser + normalizer + validator
+                                              |
+                                              v
+                                    Correlator / runtime reducer
+                                              |
+                      +-----------------------+----------------------+
+                      v                       v                      v
+                Event timeline          Vehicle graph state      Inspector/explanations
+                      |                       |                      |
+                      +------------ existing CarLog UI ------------+
+```
+
+Keep Android Learning and CarLogVisualization as separate modes sharing the same domain catalog, component IDs, knowledge nodes, scene renderers, selection state, and visual primitives. Visualization state must not overwrite learning notes, profiles, or curated scenario progress.
+
+### 15.3 Domain contracts
+
+- [ ] Add typed `VisualizationEventId`, `LogSourceId`, `CorrelationId`, and `DeviceId` identifiers.
+- [ ] Add `LogRecord` with source, raw line, timestamp, severity, tag, PID/TID, process, message, and parser confidence.
+- [ ] Add `NormalizedCarEvent` with typed event kind, monotonic/wall-clock timestamps, component IDs, knowledge node IDs, state mutations, evidence, and provenance.
+- [ ] Add event kinds for log line, property change, network frame, Binder call, service/process lifecycle, audio focus, display update, user lifecycle, power transition, and parse warning.
+- [ ] Add serializable `VehicleRuntimeState` for power, user/occupant, displays, audio zones, connectivity, selected properties, active services, and health flags.
+- [ ] Add `Explanation` with `observed | correlated | inferred | unknown` confidence and source-record links.
+- [ ] Preserve raw evidence separately from normalized fields; never present inferred values as raw device truth.
+
+### 15.4 Ingestion sources and safety
+
+- [ ] Implement `FileLogAdapter` for UTF-8 logcat text, JSON, and NDJSON uploads with size limits, cancellation, progress, and encoding errors.
+- [ ] Extend replay with metadata, play/pause, speed, seek, end-of-stream, and parser-version information.
+- [ ] Define a `DeviceBridge` contract for a local companion process delivering validated events over localhost WebSocket or another documented transport.
+- [ ] Implement the bridge outside the browser with an allowlisted read-only command set: device listing, explicit device selection, bounded logcat retrieval, and bounded logcat streaming only.
+- [ ] Require confirmation before connecting; display device serial (redacted by default), transport, connection status, last-event time, and stale state.
+- [ ] Reject shell metacharacters, arbitrary command text, unbounded streams, unknown bridge messages, and non-allowlisted operations.
+- [ ] Document Android device authorization, USB/Wi-Fi debugging, bridge installation, privacy, and disconnect/revocation.
+
+### 15.5 Parsing and normalization
+
+- [ ] Parse common Android logcat formats: threadtime, brief, long, and JSON export.
+- [ ] Extract timestamps, severity, tag, process/thread IDs, UID when available, and message while retaining the original line.
+- [ ] Add versioned parser plugins for VHAL/IVehicle, CarPropertyService/Manager, CAN/Ethernet gateways, CarAudioService/audio focus, DisplayManager/SystemUI, CarUserManager/User HAL, and CarPowerManagementService.
+- [ ] Normalize known messages into typed events with source metadata; keep unknown lines as searchable `log-line` events.
+- [ ] Emit parse warnings instead of dropping malformed records; show warning counts and affected lines.
+- [ ] Use chunked ingestion, configurable retention, and backpressure for large files/live streams.
+- [ ] Add deterministic fixtures for each parser and timezone, clock-discontinuity, malformed, duplicate, and out-of-order cases.
+
+### 15.6 Correlation and runtime state
+
+- [ ] Correlate using timestamp windows, PID/TID, transaction/request IDs, property IDs, display IDs, user IDs, audio zones, and knowledge-graph edges.
+- [ ] Represent correlations as explicit evidence-backed edges with confidence, not hidden UI heuristics.
+- [ ] Reduce normalized events into `VehicleRuntimeState`; support reset, seek, and checkpoint rebuild.
+- [ ] Add checkpoints/indexes so seeking large logs does not replay from byte zero.
+- [ ] Detect clock jumps, duplicate events, out-of-order records, stale streams, and conflicting state updates.
+- [ ] Add explainable MVP journeys for vehicle speed to cluster, Android boot, media/audio focus, user switch, and suspend/wake.
+
+### 15.7 UI and reuse of current CarLog visuals
+
+- [ ] Add a top-level mode switch: `Android Learning` and `CarLog Visualization`.
+- [ ] Add a source/session panel for file import, replay metadata, ADB connection, device identity, parser profile, and privacy controls.
+- [ ] Add a virtualized event timeline with severity/type filters, search, time range, pause/live-tail, next/previous event, and jump-to-source-line.
+- [ ] Reuse vehicle selection, hotspots, X-Ray, isolate, exploded view, camera focus, architecture lens, signal overlays, network paths, and reduced-motion behavior.
+- [ ] Highlight physical component(s) and software node(s) for the selected event; dim unrelated systems while preserving context.
+- [ ] Add an event inspector showing raw line, normalized event, timestamps, source, evidence, related events, confidence, and state diff.
+- [ ] Add a runtime-state panel for power, user, display, audio, network, VHAL/property, service, and health state with last-updated timestamps.
+- [ ] Add �why?� explanations linking conclusions to exact records and graph edges.
+- [ ] Add live-tail auto-follow with explicit pause/unfollow; never move selection unexpectedly while paused.
+- [ ] Show status as `FILE IMPORT`, `RECORDED REPLAY`, `ADB CONNECTED`, `ADB STALE`, `PARSE WARNING`, or `DISCONNECTED`.
+- [ ] Announce new events, parser warnings, connection changes, selected event, and inferred state changes with accessible live regions.
+- [ ] Add redaction controls for VINs, serials, usernames, package arguments, IPs, and personal log content.
+
+### 15.8 Persistence, sharing, and performance
+
+- [ ] Persist visualization preferences and session metadata only by default; do not persist raw logs without explicit action.
+- [ ] Add explicit redacted-session export with schema version and redaction metadata after privacy review.
+- [ ] Keep raw logs, credentials, serials, and personal data out of shareable URLs.
+- [ ] Virtualize large lists and lazy-load raw payloads; update the 3D scene incrementally instead of rebuilding per line.
+- [ ] Define budgets for import latency, live throughput, retained records, memory, and seek/state-rebuild latency.
+- [ ] Test reduced motion, low-end devices, WebGL fallback, offline mode, and at least one million records.
+
+### 15.9 Verification and acceptance
+
+- [ ] Unit-test formats, normalization, allowlists, redaction, correlation, reducer transitions, checkpoints, and malformed input.
+- [ ] Verify unknown lines remain visible/searchable without crashes or false explanations.
+- [ ] Security-test the bridge: only allowlisted read-only operations, validated device selection, timeout, disconnect, stale state, and arbitrary-command rejection.
+- [ ] Component-test source panel, timeline, filters, event inspector, state panel, confidence labels, and live-tail pause behavior.
+- [ ] Add E2E fixtures for speed/cluster, boot, media, user switch, and suspend/wake; each must select expected physical and Android nodes.
+- [ ] Add E2E coverage for file import, replay controls, ADB connect/disconnect, WebGL fallback, reload, redaction, and no-console-error behavior.
+- [ ] Add accessibility checks for keyboard navigation, focus management, aria-live, contrast, reduced motion, and mobile touch targets.
+- [ ] Generate a provenance report containing source, device/session metadata, parser version, ruleset, counts, warnings, and redaction status.
+
+CarLogVisualization MVP is complete when a user can import an AAOS log, select a relevant line, see the mapped vehicle/software path and current state, inspect raw evidence and confidence, replay/seek the session, and use the feature without ADB or WebGL. ADB mode is a read-only, allowlisted, observable, independently disableable extension.
+
+### 15.10 Suggested implementation sprints
+
+| Sprint | Scope | Estimate |
+|---|---|---:|
+| CV-1 | Domain contracts, file/NDJSON ingestion, parser warnings, fixtures | 3-4 days |
+| CV-2 | Normalization rules, component/node mapping, event timeline and inspector | 4-5 days |
+| CV-3 | Correlation engine, runtime reducer, checkpoints, state panel | 4-5 days |
+| CV-4 | Reuse 3D/Concept Images highlighting, five journey explainers, replay controls | 4-5 days |
+| CV-5 | Local ADB companion bridge, allowlist, device/session UI, stale handling | 4-6 days |
+| CV-6 | Privacy/redaction, performance, accessibility, E2E, documentation | 4-5 days |

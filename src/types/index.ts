@@ -5,7 +5,9 @@ export type ViewMode =
   | "architecture"
   | "signal"
   | "learning"
-  | "diagnostic";
+  | "diagnostic"
+  | "visualization";
+export type { LogRecord, NormalizedCarEvent, VehicleRuntimeState, VisualizationSession } from "../domain/visualization";
 
 export type LearningStatus =
   | "Not started"

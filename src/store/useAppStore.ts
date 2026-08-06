@@ -4,6 +4,8 @@ import { componentById } from "../data/vehicle";
 import { scenarioById } from "../data/scenarios";
 import { ScenarioEngine } from "../engine/scenarioEngine";
 import type { ConnectionStatus } from "../domain/telemetry";
+import type { NormalizedCarEvent, VehicleRuntimeState, VisualizationSession } from "../domain/visualization";
+import { parseCarLog } from "../engine/visualizationParser";
 import type {
   ComponentId,
   InspectorTab,
@@ -61,6 +63,11 @@ interface AppState {
   tagAssignments: Partial<Record<ComponentId, string[]>>;
   profiles: Record<string, ProfileData>;
   activeProfileId: string;
+  visualizationSession: VisualizationSession | null;
+  visualizationEventIndex: number;
+  visualizationPlaying: boolean;
+  visualizationSpeed: number;
+  visualizationState: VehicleRuntimeState;
   camera: CameraCommand;
   setPresentation: (presentation: "render" | "spatial") => void;
   setMode: (mode: ViewMode) => void;
@@ -93,6 +100,12 @@ interface AppState {
   importProfile: (value: string) => { ok: boolean; message: string };
   setCamera: (position: Vector3Tuple, target: Vector3Tuple) => void;
   reset: () => void;
+  loadVisualization: (session: VisualizationSession) => void;
+  importVisualizationText: (text: string, name: string) => void;
+  selectVisualizationEvent: (index: number) => void;
+  toggleVisualizationPlayback: () => void;
+  setVisualizationSpeed: (speed: number) => void;
+  advanceVisualization: () => void;
 }
 
 const initialCamera: CameraCommand = {
@@ -128,13 +141,18 @@ export const useAppStore = create<AppState>()(persist<AppState, [], [], Pick<App
   tagAssignments: {},
   profiles: defaultProfiles,
   activeProfileId: "driver",
+  visualizationSession: null,
+  visualizationEventIndex: 0,
+  visualizationPlaying: false,
+  visualizationSpeed: 1,
+  visualizationState: { power: "Unknown", user: "Unknown", displays: "Unknown", audio: "Unknown", network: "Unknown", properties: {}, activeServices: [], health: "healthy" },
   camera: initialCamera,
   setPresentation: (presentation) => set({ presentation }),
   setMode: (mode) =>
     set({
       mode,
       signalPlaying: mode === "signal",
-      timelineOpen: mode === "signal" || mode === "diagnostic" ? true : get().timelineOpen,
+      timelineOpen: mode === "signal" || mode === "diagnostic" || mode === "visualization" ? true : get().timelineOpen,
     }),
   select: (id, focus = false) => {
     const component = id ? componentById[id] : undefined;
@@ -264,6 +282,17 @@ export const useAppStore = create<AppState>()(persist<AppState, [], [], Pick<App
       completedChecks: [],
       camera: { ...initialCamera, revision: get().camera.revision + 1 },
     }),
+  loadVisualization: (visualizationSession) => set({ visualizationSession, visualizationEventIndex: 0, visualizationPlaying: false, visualizationState: reduceVisualizationState(visualizationSession.events.slice(0, 1)), mode: "visualization", timelineOpen: true, inspectorOpen: true, telemetryStatus: visualizationSession.warnings.length ? "PARSE WARNING" as ConnectionStatus : "FILE IMPORT" as ConnectionStatus }),
+  importVisualizationText: (text, name) => get().loadVisualization(parseCarLog(text, name)),
+  selectVisualizationEvent: (visualizationEventIndex) => set((state) => { const session = state.visualizationSession; const nextIndex = Math.max(0, Math.min(visualizationEventIndex, (session?.events.length ?? 1) - 1)); return { visualizationEventIndex: nextIndex, visualizationPlaying: false, visualizationState: session ? reduceVisualizationState(session.events.slice(0, nextIndex + 1)) : state.visualizationState, selectedId: session?.events[nextIndex]?.componentIds[0] ?? state.selectedId }; }),
+  toggleVisualizationPlayback: () => set((state) => ({ visualizationPlaying: !state.visualizationPlaying })),
+  setVisualizationSpeed: (visualizationSpeed) => set({ visualizationSpeed }),
+  advanceVisualization: () => set((state) => {
+    const session = state.visualizationSession;
+    if (!session || state.visualizationEventIndex >= session.events.length - 1) return { visualizationPlaying: false };
+    const index = state.visualizationEventIndex + 1;
+    return { visualizationEventIndex: index, selectedId: session.events[index].componentIds[0] ?? state.selectedId, visualizationState: reduceVisualizationState(session.events.slice(0, index + 1)), telemetryLastEventAt: Date.now() };
+  }),
 }), {
   name: "carlog-profile-v2",
   version: 2,
@@ -284,6 +313,18 @@ export const useAppStore = create<AppState>()(persist<AppState, [], [], Pick<App
     };
   },
 }));
+
+function reduceVisualizationState(events: NormalizedCarEvent[]): VehicleRuntimeState {
+  const state: VehicleRuntimeState = { power: "Unknown", user: "Unknown", displays: "Unknown", audio: "Unknown", network: "Unknown", properties: {}, activeServices: [], health: "healthy" };
+  for (const event of events) {
+    Object.assign(state, event.stateMutations);
+    if (event.kind === "network-frame") state.network = event.summary;
+    if (event.kind === "service-lifecycle") state.activeServices = [...new Set([...state.activeServices, event.summary])];
+    if (event.explanation.confidence === "unknown") state.health = "warning";
+    state.updatedAt = event.timestamp ?? state.updatedAt;
+  }
+  return state;
+}
 
 const scenarioEngine = new ScenarioEngine(
   () => ({ scenario: scenarioById[useAppStore.getState().activeScenarioId], step: useAppStore.getState().signalStep, playing: useAppStore.getState().signalPlaying, speed: useAppStore.getState().signalSpeed }),

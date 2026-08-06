@@ -16,6 +16,7 @@ import { GeneratedVehicleLayer } from "../features/vehicle-viewer/GeneratedVehic
 import { useAppStore } from "../store/useAppStore";
 import { ToolRail } from "../ui/ToolRail";
 import { TopBar } from "../ui/TopBar";
+import { VisualizationSurface } from "../features/visualization/VisualizationSurface";
 
 const VehicleScene = lazy(async () => import("../features/vehicle-viewer/VehicleScene").then((module) => ({ default: module.VehicleScene })));
 
@@ -127,6 +128,7 @@ export default function App() {
   const [failure, setFailure] = useState<string | null>(null);
   const reducedMotion = useAppStore((state) => state.reducedMotion);
   const presentation = useAppStore((state) => state.presentation);
+  const mode = useAppStore((state) => state.mode);
   const setPresentation = useAppStore((state) => state.setPresentation);
   const setReducedMotion = useAppStore((state) => state.setReducedMotion);
 
@@ -191,8 +193,9 @@ export default function App() {
           <SceneControls webglStatus={webglStatus} />
           <LearningLegend />
         </section>
-        <InspectorPanel />
-        <ScenarioTimeline />
+        {mode !== "visualization" && <InspectorPanel />}
+        {mode !== "visualization" && <ScenarioTimeline />}
+        {mode === "visualization" && <VisualizationSurface />}
       </div>
     </main>
   );

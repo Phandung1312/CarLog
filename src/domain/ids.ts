@@ -21,3 +21,8 @@ export const knowledgeNodeIds = [
 ] as const;
 
 export type KnowledgeNodeId = (typeof knowledgeNodeIds)[number];
+
+export type VisualizationEventId = `event:${string}`;
+export type LogSourceId = `source:${string}`;
+export type CorrelationId = `correlation:${string}`;
+export type DeviceId = `device:${string}`;

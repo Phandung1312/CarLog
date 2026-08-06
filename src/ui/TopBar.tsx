@@ -6,7 +6,7 @@ import { vehicleComponents } from "../data/vehicle";
 import { useAppStore } from "../store/useAppStore";
 import type { ComponentId, ScenarioId, ViewMode } from "../types";
 
-const modeLabels: Record<ViewMode, string> = { physical: "Physical systems", architecture: "Android architecture", signal: "Signal flow", learning: "Learning map", diagnostic: "Diagnostics" };
+const modeLabels: Record<ViewMode, string> = { physical: "Physical systems", architecture: "Android architecture", signal: "Signal flow", learning: "Learning map", diagnostic: "Diagnostics", visualization: "CarLog visualization" };
 type SearchResult = { id: string; label: string; kind: "Physical" | "Software" | "Scenario" | "Note" | "Tag"; componentId?: ComponentId; mode?: ViewMode; scenarioId?: ScenarioId };
 
 export function TopBar() {
